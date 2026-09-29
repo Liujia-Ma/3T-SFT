@@ -26,3 +26,12 @@ def replay_rng(state):
         yield
     finally:
         current.restore()
+
+
+def replayable_node(node_id, recompute, state):
+    """Wrap a node callback using the RNG state recorded at its original forward."""
+    from .engine import Node
+    def replay(incoming):
+        with replay_rng(state):
+            return recompute(incoming)
+    return Node(node_id, replay)

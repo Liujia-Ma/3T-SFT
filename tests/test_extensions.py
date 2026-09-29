@@ -104,3 +104,12 @@ class ExtensionTests(unittest.TestCase):
         self.assertEqual(out['steps'], 2)
         self.assertEqual(out['seed'], 7)
         self.assertEqual(base['steps'], 30)
+
+    def test_stochastic_node_callback_repeats_forward(self):
+        import torch
+        from three_t_sft.reproducibility import RNGState, replayable_node
+        state = RNGState.capture()
+        node = replayable_node('dropout', lambda x: torch.nn.functional.dropout(x['value'],.5,training=True), state)
+        one = node.recompute({'value':torch.ones(100)})
+        two = node.recompute({'value':torch.ones(100)})
+        self.assertTrue(torch.equal(one,two))
