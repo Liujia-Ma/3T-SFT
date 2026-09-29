@@ -23,3 +23,11 @@ class ExtensionTests(unittest.TestCase):
         from three_t_sft.transport import token_ste
         for ids in (torch.tensor([-1]), torch.tensor([3]), torch.tensor([1.])):
             with self.assertRaises(ValueError): token_ste(torch.zeros(1, 3), ids, torch.zeros(3, 2))
+
+    def test_training_config_validation(self):
+        import json
+        from three_t_sft.config import validate_config
+        base = json.loads((Path(__file__).resolve().parents[1]/'configs/tiny.json').read_text())
+        for key, value in [('steps', True), ('learning_rate', float('nan')), ('mode', 'unknown')]:
+            with self.assertRaises(ValueError): validate_config(dict(base, **{key: value}))
+        self.assertEqual(validate_config(base), base)

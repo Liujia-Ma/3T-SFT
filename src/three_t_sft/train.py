@@ -5,6 +5,7 @@ import random
 from pathlib import Path
 import torch
 from .tiny import TinyWorkflow
+from .config import validate_config
 
 
 def data(seed):
@@ -28,6 +29,7 @@ def evaluate(model, rows, max_tokens):
 
 
 def run(config, output):
+    config = validate_config(config)
     torch.set_num_threads(1)
     seed = config['seed']; torch.manual_seed(seed)
     model = TinyWorkflow(heterogeneous=config['heterogeneous'])
