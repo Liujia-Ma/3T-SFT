@@ -41,3 +41,11 @@ class ExtensionTests(unittest.TestCase):
         caller = torch.get_rng_state().clone()
         with replay_rng(state): torch.testing.assert_close(torch.rand(4), expected)
         self.assertTrue(torch.equal(caller, torch.get_rng_state()))
+
+    def test_answer_label_masking(self):
+        import torch
+        from three_t_sft.transport import answer_labels
+        ids = torch.tensor([[1, 2, 3, 0]])
+        labels = answer_labels(ids, torch.tensor([[False, True, True, True]]), torch.tensor([[1, 1, 1, 0]]))
+        self.assertEqual(labels.tolist(), [[-100, 2, 3, -100]])
+        self.assertEqual(ids.tolist(), [[1, 2, 3, 0]])

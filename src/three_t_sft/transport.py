@@ -94,3 +94,14 @@ def final_answer_loss(logits, labels):
     if (counts == 0).any(): raise ValueError('Every example needs final-answer supervision')
     loss = nn.functional.cross_entropy(logits.transpose(1, 2), labels, ignore_index=-100, reduction='none')
     return (loss.sum(-1)/counts).mean()
+
+
+def answer_labels(token_ids, answer_mask, attention_mask=None):
+    """Build unshifted causal labels; callers shift once with model logits."""
+    if token_ids.shape != answer_mask.shape or answer_mask.dtype != torch.bool:
+        raise ValueError('Answer mask must be boolean and match token IDs')
+    active = answer_mask.clone()
+    if attention_mask is not None:
+        if attention_mask.shape != token_ids.shape: raise ValueError('Attention mask shape mismatch')
+        active &= attention_mask.bool()
+    return token_ids.clone().masked_fill(~active, -100)
