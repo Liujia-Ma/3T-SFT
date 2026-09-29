@@ -7,7 +7,7 @@ import torch
 from .tiny import TinyWorkflow
 from .config import validate_config, apply_overrides
 from .checkpoint import atomic_save
-from .metrics import parameter_counts
+from .metrics import parameter_counts, gradient_norm
 
 
 def data(seed):
@@ -65,10 +65,11 @@ def run(config, output):
                 max_tokens=config['max_tokens'], temperature=config['temperature'])
             norms = [sum(float(p.grad.norm()) for p in a.parameters_to_train() if p.grad is not None)
                      for a in model.agents]
-            torch.nn.utils.clip_grad_norm_(params, config['grad_clip'])
+            global_norm = gradient_norm(params)
+            torch.nn.utils.clip_grad_norm_(params, config['grad_clip'], error_if_nonfinite=True)
             optimizer.step()
             metrics = {'step': step+1, 'train_loss': report['final_loss'], 'agent_grad_norms': norms,
-                       'transport_norms': report['transport_norms']}
+                       'transport_norms': report['transport_norms'], 'global_grad_norm_before_clip': global_norm}
             if (step+1) % config['eval_every'] == 0 or step+1 == config['steps']:
                 metrics['validation'] = evaluate(model, validation, config['max_tokens'])
                 if metrics['validation']['loss'] < best:

@@ -22,3 +22,14 @@ def parameter_counts(model):
     total = sum(p.numel() for p in params)
     trainable = sum(p.numel() for p in params if p.requires_grad)
     return {'total': total, 'trainable': trainable, 'frozen': total-trainable}
+
+
+def gradient_norm(parameters):
+    """Global L2 norm before clipping; fail on invalid optimization signals."""
+    import torch
+    norms = []
+    for parameter in parameters:
+        if parameter.grad is None: continue
+        if not torch.isfinite(parameter.grad).all(): raise ValueError('Nonfinite parameter gradient')
+        norms.append(parameter.grad.detach().double().norm().item())
+    return sum(value*value for value in norms)**.5

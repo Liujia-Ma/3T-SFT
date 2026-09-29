@@ -113,3 +113,11 @@ class ExtensionTests(unittest.TestCase):
         one = node.recompute({'value':torch.ones(100)})
         two = node.recompute({'value':torch.ones(100)})
         self.assertTrue(torch.equal(one,two))
+
+    def test_global_gradient_norm_and_nonfinite_failure(self):
+        import torch
+        from three_t_sft.metrics import gradient_norm
+        p = torch.nn.Parameter(torch.zeros(2)); p.grad = torch.tensor([3.,4.])
+        self.assertEqual(gradient_norm([p]),5.)
+        p.grad[0] = float('nan')
+        with self.assertRaises(ValueError): gradient_norm([p])
