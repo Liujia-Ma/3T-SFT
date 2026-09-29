@@ -48,6 +48,8 @@ def backward_trace(nodes, edges, terminal, *, mu=1.0, loss_scale=1.0):
     for edge in edges:
         if edge.sender not in by_id or edge.receiver not in by_id or edge.real.ndim != 2:
             raise ValueError('Invalid message edge')
+        if not edge.real.is_floating_point() or not torch.isfinite(edge.real).all():
+            raise ValueError('Message embeddings must be finite floating-point tensors')
         incoming[edge.receiver].append(edge); outgoing[edge.sender].append(edge)
     pending = {k: len(v) for k, v in incoming.items()}
     queue = [k for k, v in pending.items() if v == 0]
