@@ -49,3 +49,10 @@ class ExtensionTests(unittest.TestCase):
         labels = answer_labels(ids, torch.tensor([[False, True, True, True]]), torch.tensor([[1, 1, 1, 0]]))
         self.assertEqual(labels.tolist(), [[-100, 2, 3, -100]])
         self.assertEqual(ids.tolist(), [[1, 2, 3, 0]])
+
+    def test_paired_seed_statistics(self):
+        from three_t_sft.metrics import paired_gains, summarize_seeds
+        r = paired_gains({42: 3., 43: 5.}, {42: 2., 43: 3.})
+        self.assertEqual(r['mean'], 1.5)
+        self.assertIsNone(summarize_seeds([1.])['sample_std'])
+        with self.assertRaises(ValueError): paired_gains({1: 2.}, {2: 2.})
