@@ -14,3 +14,11 @@ def summarize_seeds(values):
 def paired_gains(treatment, baseline):
     if set(treatment) != set(baseline): raise ValueError('Seed IDs must match')
     return summarize_seeds(treatment[seed]-baseline[seed] for seed in sorted(treatment))
+
+
+def parameter_counts(model):
+    """PyTorch parameter iteration deduplicates shared parameter objects."""
+    params = list(model.parameters())
+    total = sum(p.numel() for p in params)
+    trainable = sum(p.numel() for p in params if p.requires_grad)
+    return {'total': total, 'trainable': trainable, 'frozen': total-trainable}

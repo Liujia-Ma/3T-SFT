@@ -76,3 +76,10 @@ class ExtensionTests(unittest.TestCase):
             atomic_save({'weight':torch.tensor([2.])}, p)
             self.assertEqual(torch.load(p, weights_only=True)['weight'].item(), 2.)
             self.assertEqual(len(list(Path(folder).iterdir())), 1)
+
+    def test_parameter_counts_respect_freezing(self):
+        import torch
+        from three_t_sft.metrics import parameter_counts
+        m = torch.nn.Linear(3, 2)
+        m.weight.requires_grad_(False)
+        self.assertEqual(parameter_counts(m), {'total':8,'trainable':2,'frozen':6})

@@ -7,6 +7,7 @@ import torch
 from .tiny import TinyWorkflow
 from .config import validate_config
 from .checkpoint import atomic_save
+from .metrics import parameter_counts
 
 
 def data(seed):
@@ -73,6 +74,7 @@ def run(config, output):
     model.load_state_dict(torch.load(checkpoint, weights_only=True))
     summary = {'kind': 'synthetic_cpu_engineering_check', 'torch': torch.__version__,
                'mode': config['mode'], 'seed': seed, 'steps': config['steps'],
+               'parameters': parameter_counts(model),
                'best_validation_loss': best, 'test': evaluate(model, test, config['max_tokens']),
                'first_step_agent_grad_norms': records[0]['agent_grad_norms']}
     (output/'summary.json').write_text(json.dumps(summary, indent=2), encoding='utf-8')
