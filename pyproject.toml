@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "three-t-sft"
+version = "0.1.0"
+description = "Training Through Text: final-answer supervision across discrete multi-agent communication"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["torch>=2.2"]
+authors = [{name = "Liujia Ma"}]
+
+[tool.setuptools.packages.find]
+where = ["src"]
