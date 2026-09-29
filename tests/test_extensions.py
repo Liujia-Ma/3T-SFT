@@ -31,3 +31,13 @@ class ExtensionTests(unittest.TestCase):
         for key, value in [('steps', True), ('learning_rate', float('nan')), ('mode', 'unknown')]:
             with self.assertRaises(ValueError): validate_config(dict(base, **{key: value}))
         self.assertEqual(validate_config(base), base)
+
+    def test_replay_rng_restores_caller(self):
+        import torch
+        from three_t_sft.reproducibility import RNGState, replay_rng
+        torch.manual_seed(3)
+        state = RNGState.capture()
+        expected = torch.rand(4)
+        caller = torch.get_rng_state().clone()
+        with replay_rng(state): torch.testing.assert_close(torch.rand(4), expected)
+        self.assertTrue(torch.equal(caller, torch.get_rng_state()))
