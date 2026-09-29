@@ -5,7 +5,7 @@ import random
 from pathlib import Path
 import torch
 from .tiny import TinyWorkflow
-from .config import validate_config
+from .config import validate_config, apply_overrides
 from .checkpoint import atomic_save
 from .metrics import parameter_counts
 
@@ -89,9 +89,11 @@ def main():
     parser.add_argument('--config', default='configs/tiny.json')
     parser.add_argument('--output', default='outputs/tiny-radst')
     parser.add_argument('--mode', choices=['radst', 'terminal'])
+    parser.add_argument('--steps', type=int)
+    parser.add_argument('--seed', type=int)
     args = parser.parse_args()
     config = json.loads(Path(args.config).read_text(encoding='utf-8'))
-    if args.mode: config['mode'] = args.mode
+    config = apply_overrides(config, mode=args.mode, steps=args.steps, seed=args.seed)
     if config['steps'] < 1 or config['eval_every'] < 1 or config['max_tokens'] < 1:
         raise ValueError('Positive steps, evaluation interval and message length required')
     print(json.dumps(run(config, args.output), indent=2))

@@ -95,3 +95,12 @@ class ExtensionTests(unittest.TestCase):
             result = evaluate(model, [{'question':'1+2=','answer':'3'}], 2)
             self.assertEqual(trace.call_count, 1)
         self.assertEqual(result['count'], 1)
+
+    def test_cli_config_overrides_preserve_source(self):
+        import json
+        from three_t_sft.config import apply_overrides
+        base = json.loads((Path(__file__).resolve().parents[1]/'configs/tiny.json').read_text())
+        out = apply_overrides(base, steps=2, seed=7)
+        self.assertEqual(out['steps'], 2)
+        self.assertEqual(out['seed'], 7)
+        self.assertEqual(base['steps'], 30)

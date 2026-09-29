@@ -14,3 +14,10 @@ def validate_config(config):
         if type(value) not in (int, float) or not isfinite(value) or value <= 0:
             raise ValueError(f'{key} must be finite and positive')
     return dict(config)
+
+
+def apply_overrides(config, *, mode=None, steps=None, seed=None):
+    updated = dict(config)
+    for key, value in (('mode', mode), ('steps', steps), ('seed', seed)):
+        if value is not None: updated[key] = value
+    return validate_config(updated)
