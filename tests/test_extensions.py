@@ -17,3 +17,9 @@ class ExtensionTests(unittest.TestCase):
         for tensor in (torch.ones(1, 2, dtype=torch.long), torch.tensor([[float('nan')]])):
             with self.assertRaises(ValueError):
                 backward_trace([Node('a', None), Node('b', None)], [Edge('e', 'a', 'b', tensor)], 'b')
+
+    def test_invalid_hard_tokens(self):
+        import torch
+        from three_t_sft.transport import token_ste
+        for ids in (torch.tensor([-1]), torch.tensor([3]), torch.tensor([1.])):
+            with self.assertRaises(ValueError): token_ste(torch.zeros(1, 3), ids, torch.zeros(3, 2))

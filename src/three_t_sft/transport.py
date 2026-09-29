@@ -9,6 +9,9 @@ def token_ste(logits, hard_ids, embedding_weight, temperature=1.0):
         raise ValueError('Temperature must be finite and positive')
     if logits.shape[:-1] != hard_ids.shape or logits.shape[-1] != embedding_weight.shape[0]:
         raise ValueError('Inconsistent token/logit/vocabulary shapes')
+    if hard_ids.dtype != torch.long or ((hard_ids < 0) | (hard_ids >= embedding_weight.shape[0])).any():
+        raise ValueError('Hard IDs must be valid int64 vocabulary indices')
+    if not torch.isfinite(logits).all(): raise ValueError('Sender logits must be finite')
     probabilities = (logits / temperature).softmax(-1)
     soft = probabilities @ embedding_weight.detach()
     hard = nn.functional.embedding(hard_ids, embedding_weight.detach())
