@@ -56,3 +56,13 @@ class ExtensionTests(unittest.TestCase):
         self.assertEqual(r['mean'], 1.5)
         self.assertIsNone(summarize_seeds([1.])['sample_std'])
         with self.assertRaises(ValueError): paired_gains({1: 2.}, {2: 2.})
+
+    def test_final_answer_loader_drops_rationales(self):
+        import tempfile, json
+        from three_t_sft.data import load_final_answers
+        with tempfile.TemporaryDirectory() as folder:
+            p = Path(folder)/'input.jsonl'
+            p.write_text(json.dumps({'id':'x','question':'q','answer':'a','rationale':'unused'}))
+            self.assertEqual(set(load_final_answers(p)[0]), {'id','question','answer'})
+            p.write_text(p.read_text()+'\n'+p.read_text())
+            with self.assertRaises(ValueError): load_final_answers(p)
