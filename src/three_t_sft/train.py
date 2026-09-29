@@ -6,6 +6,7 @@ from pathlib import Path
 import torch
 from .tiny import TinyWorkflow
 from .config import validate_config
+from .checkpoint import atomic_save
 
 
 def data(seed):
@@ -50,7 +51,7 @@ def run(config, output):
     (output/'config.json').write_text(json.dumps(config, indent=2), encoding='utf-8')
     checkpoint = output/'best.pt'
     best = evaluate(model, validation, config['max_tokens'])['loss']
-    torch.save(model.state_dict(), checkpoint)
+    atomic_save(model.state_dict(), checkpoint)
     records = []
     with (output/'metrics.jsonl').open('w', encoding='utf-8') as log:
         for step in range(config['steps']):
@@ -67,7 +68,7 @@ def run(config, output):
             if (step+1) % config['eval_every'] == 0 or step+1 == config['steps']:
                 metrics['validation'] = evaluate(model, validation, config['max_tokens'])
                 if metrics['validation']['loss'] < best:
-                    best = metrics['validation']['loss']; torch.save(model.state_dict(), checkpoint)
+                    best = metrics['validation']['loss']; atomic_save(model.state_dict(), checkpoint)
             log.write(json.dumps(metrics)+'\n'); records.append(metrics)
     model.load_state_dict(torch.load(checkpoint, weights_only=True))
     summary = {'kind': 'synthetic_cpu_engineering_check', 'torch': torch.__version__,

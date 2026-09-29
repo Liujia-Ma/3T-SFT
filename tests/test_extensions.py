@@ -66,3 +66,13 @@ class ExtensionTests(unittest.TestCase):
             self.assertEqual(set(load_final_answers(p)[0]), {'id','question','answer'})
             p.write_text(p.read_text()+'\n'+p.read_text())
             with self.assertRaises(ValueError): load_final_answers(p)
+
+    def test_atomic_checkpoint_roundtrip(self):
+        import torch, tempfile
+        from three_t_sft.checkpoint import atomic_save
+        with tempfile.TemporaryDirectory() as folder:
+            p = Path(folder)/'best.pt'
+            atomic_save({'weight':torch.tensor([1.])}, p)
+            atomic_save({'weight':torch.tensor([2.])}, p)
+            self.assertEqual(torch.load(p, weights_only=True)['weight'].item(), 2.)
+            self.assertEqual(len(list(Path(folder).iterdir())), 1)
