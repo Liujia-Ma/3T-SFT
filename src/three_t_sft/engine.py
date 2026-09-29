@@ -1,5 +1,6 @@
 """Reverse-topological manual VJP on a fixed realized communication trace."""
 from dataclasses import dataclass
+from math import isfinite
 from typing import Callable
 import torch
 from .transport import manual_proxy
@@ -36,7 +37,8 @@ def backward_trace(nodes, edges, terminal, *, mu=1.0, loss_scale=1.0):
     loss_scale supports batch/Monte Carlo averaging, applied exactly once at the
     terminal and once per local stabilizer, not at every message hop.
     """
-    if loss_scale <= 0: raise ValueError('Positive loss scale required')
+    if not isfinite(loss_scale) or loss_scale <= 0 or not isfinite(mu) or mu <= 0:
+        raise ValueError('Finite positive loss and upstream scales required')
     by_id = {n.id: n for n in nodes}
     if len(by_id) != len(nodes) or terminal not in by_id:
         raise ValueError('Unique nodes and a known terminal are required')
