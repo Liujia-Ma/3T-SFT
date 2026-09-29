@@ -32,7 +32,8 @@ class Alignment:
         indices = torch.tensor([(r, c) for r, c, _ in self.entries],
                                dtype=torch.long, device=device).reshape(-1, 2).T
         weights = torch.tensor([v for _, _, v in self.entries], dtype=dtype, device=device)
-        return torch.sparse_coo_tensor(indices, weights, (self.rows, self.sender_count)).coalesce()
+        return torch.sparse_coo_tensor(indices, weights, (self.rows, self.sender_count),
+                                       check_invariants=True).coalesce()
 
 
 def character_offsets_to_bytes(text, offsets):

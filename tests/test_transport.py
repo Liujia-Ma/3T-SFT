@@ -4,7 +4,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'src'))
 import torch
 from three_t_sft.transport import (token_ste, receiver_ste, manual_proxy,
-                                  Bridges, final_answer_loss, policy_kl)
+                                  Bridges, final_answer_loss, policy_kl, consistency_loss)
+from three_t_sft.alignment import align, Span
 
 
 class TransportTests(unittest.TestCase):
@@ -59,6 +60,20 @@ class TransportTests(unittest.TestCase):
         policy_kl(z, ref, torch.tensor([True, False, True])).backward()
         self.assertIsNone(ref.grad)
         self.assertEqual(z.grad[1].abs().sum().item(), 0)
+
+    def test_consistency_masks_unsupported_rows(self):
+        surrogate = torch.randn(3, 4, requires_grad=True)
+        real = torch.randn(3, 4, requires_grad=True)
+        consistency_loss(surrogate, real, (0, 2)).backward()
+        self.assertIsNone(real.grad)
+        self.assertEqual(surrogate.grad[1].abs().sum().item(), 0)
+        self.assertGreater(surrogate.grad[0].norm().item(), 0)
+
+    def test_empty_alignment_tensor(self):
+        mapping = align((), (), Span(0, 0))
+        sparse = mapping.tensor(dtype=torch.double)
+        self.assertEqual(tuple(sparse.shape), (0, 0))
+        self.assertEqual(sparse._nnz(), 0)
 
 
 if __name__ == '__main__': unittest.main()
