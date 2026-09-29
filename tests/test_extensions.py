@@ -121,3 +121,12 @@ class ExtensionTests(unittest.TestCase):
         self.assertEqual(gradient_norm([p]),5.)
         p.grad[0] = float('nan')
         with self.assertRaises(ValueError): gradient_norm([p])
+
+    def test_existing_experiment_is_preserved(self):
+        import tempfile,json
+        from three_t_sft.train import run
+        config = json.loads((Path(__file__).resolve().parents[1]/'configs/tiny.json').read_text())
+        with tempfile.TemporaryDirectory() as folder:
+            p = Path(folder)/'metrics.jsonl'; p.write_text('keep')
+            with self.assertRaises(FileExistsError): run(config,folder)
+            self.assertEqual(p.read_text(),'keep')

@@ -33,8 +33,11 @@ def evaluate(model, rows, max_tokens):
     return {'loss': sum(losses)/len(losses), 'exact_match': correct/len(rows), 'count': len(rows)}
 
 
-def run(config, output):
+def run(config, output, *, overwrite=False):
     config = validate_config(config)
+    output = Path(output)
+    if not overwrite and any((output/name).exists() for name in ('metrics.jsonl','best.pt','summary.json')):
+        raise FileExistsError('Existing experiment artifacts; choose a new output or pass --overwrite')
     torch.set_num_threads(1)
     seed = config['seed']; torch.manual_seed(seed)
     model = TinyWorkflow(heterogeneous=config['heterogeneous'])
@@ -92,12 +95,13 @@ def main():
     parser.add_argument('--mode', choices=['radst', 'terminal'])
     parser.add_argument('--steps', type=int)
     parser.add_argument('--seed', type=int)
+    parser.add_argument('--overwrite', action='store_true', help='Explicitly replace artifacts in this run directory')
     args = parser.parse_args()
     config = json.loads(Path(args.config).read_text(encoding='utf-8'))
     config = apply_overrides(config, mode=args.mode, steps=args.steps, seed=args.seed)
     if config['steps'] < 1 or config['eval_every'] < 1 or config['max_tokens'] < 1:
         raise ValueError('Positive steps, evaluation interval and message length required')
-    print(json.dumps(run(config, args.output), indent=2))
+    print(json.dumps(run(config, args.output, overwrite=args.overwrite), indent=2))
 
 
 if __name__ == '__main__': main()
