@@ -38,3 +38,7 @@ Unicode byte lengths; boundary clipping; special tokens; sparse overlap weights;
 ## Not validated here
 
 Pretrained LLM integration, multi-GPU scheduling, bf16 behavior, tokenizer normalization edge cases from production vocabularies, dropout replay, and the original benchmark suite. The CI workflow provides repeatable CPU checks; its inclusion alone is not a claim that a remote CI run has completed.
+
+## Expanded engineering checks
+
+The follow-up suite has 36 passing tests. New checks cover finite transport scales, message tensors, hard token IDs, configuration, RNG restoration, answer masks, paired seed statistics, dataset filtering, atomic checkpoints, parameter counts, evaluation rollout reuse, CLI overrides, dropout replay, gradient diagnostics and output preservation. CPU checks do not establish CUDA or distributed-training compatibility.

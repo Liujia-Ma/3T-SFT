@@ -90,3 +90,7 @@ RADST-SFT is a biased first-order surrogate. It does not differentiate through t
 Production Qwen/Ministral adapters, benchmark manifests, paper checkpoints and large-model distributed training are not bundled. The included tiny results establish an executable training path; they are not evidence of the manuscript's benchmark gains. See the integration guide for exact-prefix replay, tokenizer offsets, dropout RNG restoration and model-adapter requirements.
 
 The Git history records the actual development stages of this reference implementation, with separate commits for alignment, gradient transport, runnable training, and documentation/verification.
+
+## Experiment utilities
+
+See [reproducible workflows](docs/experiment_workflows.md) for seed overrides, protected output directories, RNG replay callbacks, final-answer data loading and matched-run statistics.
