@@ -83,3 +83,15 @@ class ExtensionTests(unittest.TestCase):
         m = torch.nn.Linear(3, 2)
         m.weight.requires_grad_(False)
         self.assertEqual(parameter_counts(m), {'total':8,'trainable':2,'frozen':6})
+
+    def test_evaluation_uses_one_trace_per_example(self):
+        import torch
+        from unittest.mock import patch
+        from three_t_sft.tiny import TinyWorkflow
+        from three_t_sft.train import evaluate
+        torch.set_num_threads(1)
+        model = TinyWorkflow()
+        with patch.object(model, 'trace', wraps=model.trace) as trace:
+            result = evaluate(model, [{'question':'1+2=','answer':'3'}], 2)
+            self.assertEqual(trace.call_count, 1)
+        self.assertEqual(result['count'], 1)

@@ -26,7 +26,10 @@ def evaluate(model, rows, max_tokens):
         final = model.programs(records, row['answer'])[-1]
         incoming = {e.id: e.real for e in edges if e.receiver == '2'}
         losses.append(final.recompute(incoming).final_loss.item())
-        correct += model.predict(row['question'], max_tokens) == row['answer']
+        agent = model.agents[-1]
+        logits = agent(agent.embedding(records[-1].prompt_ids))[-1]
+        prediction = agent.tokenizer.decode_with_spans(logits.argmax().reshape(1))[0]
+        correct += prediction == row['answer']
     return {'loss': sum(losses)/len(losses), 'exact_match': correct/len(rows), 'count': len(rows)}
 
 
